@@ -21,13 +21,27 @@ public sealed class EntityJsonConverterFactory : JsonConverterFactory
 
     public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
     {
-        // Need to address issue with resolving ambiguous match for aggregate root id
-        Type valueType = typeToConvert.GetProperty(name: "Id", bindingAttr: BindingFlags.Public | BindingFlags.Instance)
-                                      ?.PropertyType ??
-                         throw new JsonException();
+        PropertyInfo propertyInfo = FindPropertyInHierarchy(typeToConvert, propertyName: "Id") ?? throw new JsonException();
+
+        Type valueType = propertyInfo.PropertyType;
 
         Type converterType = typeof(EntityJsonConverter<>).MakeGenericType(valueType);
 
         return (JsonConverter?)Activator.CreateInstance(converterType) ?? throw new JsonException();
+    }
+
+    private static PropertyInfo? FindPropertyInHierarchy(Type? type, string propertyName)
+    {
+        PropertyInfo? property = null;
+
+        while (type != null && type != typeof(object) && property == null)
+        {
+            property = type.GetProperties(bindingAttr: BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                           .FirstOrDefault(p => p.Name == propertyName);
+
+            type = type.BaseType;
+        }
+
+        return property;
     }
 }

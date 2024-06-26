@@ -81,12 +81,13 @@ BookId? bookIdFromJson = JsonSerializer.Deserialize<BookId>(bookIdJson, serializ
 Console.WriteLine(value: nameof(bookIdFromJson));
 Console.WriteLine(value: bookIdFromJson + "\n");
 
+// Uncomment to throw error for incompatible types
+string bookJson = JsonSerializer.Serialize(book, serializerOptions);
+
+Console.WriteLine(value: nameof(bookJson));
+Console.WriteLine(value: bookJson + "\n");
+
 // Uncomment to throw error regarding ambiguous reference to property named "Id"
-// string bookJson = JsonSerializer.Serialize(book, serializerOptions);
-//
-// Console.WriteLine(value: nameof(bookJson));
-// Console.WriteLine(value: bookJson + "\n");
-//
 // Book? bookFromJson = JsonSerializer.Deserialize<Book>(bookJson, serializerOptions);
 //
 // Console.WriteLine(nameof(bookFromJson));
