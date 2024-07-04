@@ -1,5 +1,8 @@
-﻿namespace Erdmier.DomainCore.Models;
+﻿using Erdmier.DomainCore.Attributes;
 
+namespace Erdmier.DomainCore.Models;
+
+[ Entity ]
 public abstract class Entity<TId> : IEquatable<Entity<TId>>
     where TId : ValueObject
 {
