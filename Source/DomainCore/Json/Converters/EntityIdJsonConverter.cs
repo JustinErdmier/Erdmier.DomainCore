@@ -29,7 +29,9 @@ public sealed class EntityIdJsonConverter<TId> : JsonConverter<EntityId<TId>>
             throw new JsonException($"Unable to get the derived type when parsing an entity id using {typeName}");
         }
 
-        Type baseType = (derivedType.BaseType == typeof(EntityId<TId>) ? derivedType.BaseType : derivedType.BaseType?.BaseType) ?? throw new JsonException();
+        Type baseType = (derivedType.BaseType == typeof(EntityId<TId>)        ? derivedType.BaseType :
+                         derivedType.BaseType == typeof(AggregateRootId<TId>) ? derivedType.BaseType?.BaseType : null)
+                        ?? throw new JsonException();
 
         // Deserialize the value property using the derived type
         PropertyInfo valuePropertyInfo = baseType.GetProperty(name: "Value", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
