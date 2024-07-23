@@ -29,25 +29,26 @@ public sealed class EntityIdJsonConverter<TId> : JsonConverter<EntityId<TId>>
             throw new JsonException($"Unable to get the derived type when parsing an entity id using {typeName}");
         }
 
+        Type baseType = (derivedType.BaseType == typeof(EntityId<TId>) ? derivedType.BaseType : derivedType.BaseType?.BaseType) ?? throw new JsonException();
+
         // Deserialize the value property using the derived type
+        PropertyInfo valuePropertyInfo = baseType.GetProperty(name: "Value", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                                         ?? throw new JsonException();
+
         object? value = JsonSerializer.Deserialize(document.RootElement.GetProperty(propertyName: "value")
                                                            .GetRawText(),
-                                                   derivedType.GetProperty(name: "Value")
-                                                              ?.PropertyType
-                                                   ?? throw new JsonException());
+                                                   valuePropertyInfo.PropertyType);
 
-        // Get create method and validate signature
-        MethodInfo? createMethod = derivedType.GetMethod(name: "Create", BindingFlags.Public | BindingFlags.Static);
+        // Get the constructor and instantiate a new instance
+        ConstructorInfo constructor = derivedType.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, binder: null, Type.EmptyTypes, modifiers: null)
+                                      ?? throw new JsonException();
 
-        if (createMethod is null
-            || createMethod.ReturnType != derivedType
-            || createMethod.IsGenericMethod)
-        {
-            throw new JsonException($"Invalid create method signature when parsing a(n) {typeName}");
-        }
+        object entityId = constructor.Invoke([]);
 
-        // Create an instance of the derived class and return it
-        return (EntityId<TId>?)createMethod.Invoke(obj: null, [value]) ?? throw new JsonException();
+        // Set the id value and return
+        valuePropertyInfo.SetValue(entityId, value, index: null);
+
+        return (EntityId<TId>)entityId;
     }
 
     public override void Write(Utf8JsonWriter writer, EntityId<TId> value, JsonSerializerOptions options)
