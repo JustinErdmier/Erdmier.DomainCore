@@ -7,6 +7,9 @@ public sealed class BookId : AggregateRootId<Guid>
         : base(value)
     { }
 
+    private BookId()
+    { }
+
     public static BookId Create(Guid value) => new(value);
 
     public static BookId CreateUnique() => Create(Guid.NewGuid());

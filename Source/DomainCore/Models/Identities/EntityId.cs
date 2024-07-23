@@ -10,7 +10,7 @@ public abstract class EntityId<TId> : ValueObject
     { }
 
     /// <summary>Gets the value of the id.</summary>
-    public TId Value { get; } = default!;
+    public TId Value { get; private init; } = default!;
 
     protected override IEnumerable<object?> GetEqualityComponents()
     {

@@ -6,6 +6,9 @@ public sealed class AuthorId : EntityId<Guid>
         : base(value)
     { }
 
+    private AuthorId()
+    { }
+
     public static AuthorId Create(Guid value) => new(value);
 
     public static AuthorId CreateUnique() => Create(Guid.NewGuid());
